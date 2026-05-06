@@ -50,14 +50,18 @@ jobs:
           DEPLOY_PATH: ${{ vars.DEPLOY_PATH }}
           DEPLOY_USER: ${{ vars.DEPLOY_USER }}
         run: |
+          set -ex
+
           # Set up SSH key
           mkdir -p ~/.ssh
           echo "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan -H $DEPLOY_HOST >> ~/.ssh/known_hosts 2>/dev/null
 
+          ls -la
+
           # Deploy files via SCP
-          scp -i ~/.ssh/deploy_key -r index.html style.css app.js \
+          scp -v -i ~/.ssh/deploy_key -r index.html style.css app.js \
             $DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH/
 
           echo "✅ Deployed to $DEPLOY_HOST:$DEPLOY_PATH"
@@ -68,13 +72,9 @@ jobs:
           DEPLOY_USER: ${{ vars.DEPLOY_USER }}
           DEPLOY_PATH: ${{ vars.DEPLOY_PATH }}
         run: |
-          set -ex
-
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
 
-          ls -la
-
-          ssh -v -i ~/.ssh/deploy_key $DEPLOY_USER@$DEPLOY_HOST "ls -la $DEPLOY_PATH"
+          ssh -i ~/.ssh/deploy_key $DEPLOY_USER@$DEPLOY_HOST "ls -la $DEPLOY_PATH"
           echo "✅ Deployment verified!"
